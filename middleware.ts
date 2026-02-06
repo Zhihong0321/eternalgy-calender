@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import jwt from "jsonwebtoken";
+import { jwtVerify } from "jose";
 
 const AUTH_URL = "https://auth.atap.solar";
 
@@ -39,7 +39,7 @@ function getReturnTo(request: NextRequest) {
   return encodeURIComponent(publicUrl);
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const token = request.cookies.get("auth_token")?.value;
   if (!token) {
     const returnTo = getReturnTo(request);
@@ -47,7 +47,8 @@ export function middleware(request: NextRequest) {
   }
 
   try {
-    jwt.verify(token, process.env.JWT_SECRET ?? "");
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "");
+    await jwtVerify(token, secret);
     return NextResponse.next();
   } catch {
     const returnTo = getReturnTo(request);

@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
+import { jwtVerify } from "jose";
 
 export type AuthUser = {
   id: number;
@@ -22,7 +22,10 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   if (!token) return null;
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET ?? "") as AuthTokenPayload;
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "");
+    const { payload } = await jwtVerify(token, secret);
+    const decoded = payload as unknown as AuthTokenPayload;
+
     const id = Number(decoded.userId);
     if (Number.isNaN(id)) return null;
     return {
