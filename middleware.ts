@@ -4,10 +4,26 @@ import jwt from "jsonwebtoken";
 const AUTH_URL = "https://auth.atap.solar";
 
 function getReturnTo(request: NextRequest) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  if (baseUrl && baseUrl.startsWith("http")) {
+  let baseUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+
+  if (baseUrl) {
+    // If protocol is missing, prepend https://
+    if (!baseUrl.startsWith("http")) {
+      baseUrl = `https://${baseUrl}`;
+    }
+    // Remove trailing slash if present to avoid double slashes
+    baseUrl = baseUrl.replace(/\/$/, "");
     return encodeURIComponent(baseUrl + request.nextUrl.pathname + request.nextUrl.search);
   }
+
+  // Use headers to reconstruct the URL as seen by the user (fallback)
+  const host = request.headers.get("host");
+  const protocol = request.headers.get("x-forwarded-proto") || "http";
+
+  if (host) {
+    return encodeURIComponent(`${protocol}://${host}${request.nextUrl.pathname}${request.nextUrl.search}`);
+  }
+
   return encodeURIComponent(request.nextUrl.href);
 }
 
