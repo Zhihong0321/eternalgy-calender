@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ApprovalStatus {
+  pending
+  approved
+  declined
+}
+
+model CalendarDepartment {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members CalendarMemberDepartment[]
+
+  @@map("calendar_departments")
+}
+
+model CalendarMemberDepartment {
+  id            String             @id @default(cuid())
+  memberId      Int
+  departmentId  String
+  createdAt     DateTime           @default(now())
+
+  department    CalendarDepartment @relation(fields: [departmentId], references: [id])
+
+  @@unique([memberId, departmentId])
+  @@index([memberId])
+  @@map("calendar_member_departments")
+}
+
+model Appointment {
+  id           String         @id @default(cuid())
+  subject      String
+  content      String?
+  startAt      DateTime
+  endAt        DateTime
+  status       ApprovalStatus @default(pending)
+
+  createdById  Int
+  memberId     Int
+  approvedById Int?
+  approvedAt   DateTime?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([memberId, startAt])
+  @@index([createdById])
+  @@map("calendar_appointments")
+}
+
+model Task {
+  id           String         @id @default(cuid())
+  title        String
+  content      String?
+  startAt      DateTime?
+  endAt        DateTime?
+  deadlineAt   DateTime?
+  status       ApprovalStatus @default(pending)
+
+  createdById  Int
+  assignedToId Int
+  approvedById Int?
+  approvedAt   DateTime?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([assignedToId, deadlineAt])
+  @@index([createdById])
+  @@map("calendar_tasks")
+}
