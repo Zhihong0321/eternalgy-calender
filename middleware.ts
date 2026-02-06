@@ -4,39 +4,39 @@ import jwt from "jsonwebtoken";
 const AUTH_URL = "https://auth.atap.solar";
 
 function getReturnTo(request: NextRequest) {
-  // 1. Try environment variable first
-  let baseUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL)?.trim();
+  const protocol = request.headers.get("x-forwarded-proto") || "https";
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+  const pathname = request.nextUrl.pathname;
+  const search = request.nextUrl.search;
 
-  if (baseUrl) {
-    if (!baseUrl.startsWith("http")) {
-      baseUrl = `https://${baseUrl}`;
-    }
-    baseUrl = baseUrl.replace(/\/$/, "");
-    return encodeURIComponent(baseUrl + request.nextUrl.pathname + request.nextUrl.search);
+  // Try to find the real public URL
+  let publicUrl = "";
+
+  // 1. Check Env
+  let appUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL)?.trim();
+  if (appUrl) {
+    if (!appUrl.startsWith("http")) appUrl = `https://${appUrl}`;
+    try {
+      publicUrl = new URL(pathname + search, appUrl).toString();
+    } catch { }
   }
 
-  // 2. Try forwarded headers (standard for proxies like Railway)
-  const xForwardedHost = request.headers.get("x-forwarded-host");
-  const xForwardedProto = request.headers.get("x-forwarded-proto") || "https";
-
-  if (xForwardedHost && !xForwardedHost.includes("localhost")) {
-    return encodeURIComponent(`${xForwardedProto}://${xForwardedHost}${request.nextUrl.pathname}${request.nextUrl.search}`);
+  // 2. If no env or invalid, use headers
+  if (!publicUrl && host && !host.includes("localhost")) {
+    publicUrl = `${protocol}://${host}${pathname}${search}`;
   }
 
-  // 3. Last fallback: reconstruct from Host header but prefer https
-  const host = request.headers.get("host");
-  if (host && !host.includes("localhost")) {
-    const protocol = request.headers.get("x-forwarded-proto") || "https";
-    return encodeURIComponent(`${protocol}://${host}${request.nextUrl.pathname}${request.nextUrl.search}`);
+  // 3. Fallback
+  if (!publicUrl) {
+    publicUrl = request.nextUrl.href;
   }
 
-  // Final fallback to request.nextUrl.href, but replace localhost if found
-  let href = request.nextUrl.href;
-  if (href.includes("localhost:8080") && xForwardedHost) {
-    href = href.replace("localhost:8080", xForwardedHost);
+  // Final emergency check: if it still says localhost, and we have ANY host header, use it
+  if (publicUrl.includes("localhost") && host && !host.includes("localhost")) {
+    publicUrl = publicUrl.replace(/https?:\/\/localhost(:\d+)?/, `${protocol}://${host}`);
   }
 
-  return encodeURIComponent(href);
+  return encodeURIComponent(publicUrl);
 }
 
 export function middleware(request: NextRequest) {
