@@ -7,6 +7,1921 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model admin_backup_logs {
+  id         Int       @id @default(dbgenerated("nextval('_admin_backup_logs_id_seq'::regclass)"))
+  timestamp  DateTime? @default(now()) @db.Timestamp(6)
+  status     String?   @db.VarChar(50)
+  filename   String?   @db.VarChar(255)
+  size_bytes BigInt?
+  message    String?
+
+  @@map("_admin_backup_logs")
+}
+
+model agent {
+  id                       Int                    @id @default(autoincrement())
+  bubble_id                String                 @unique
+  last_synced_at           DateTime?              @default(now()) @db.Timestamptz(6)
+  created_at               DateTime?              @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime?              @default(now()) @db.Timestamptz(6)
+  modified_date            DateTime?              @db.Timestamptz(6)
+  linked_user_login        String?
+  name                     String?
+  current_annual_sales     Int?
+  contact                  String?
+  created_date             DateTime?              @db.Timestamptz(6)
+  last_update_annual_sales DateTime?              @db.Timestamptz(6)
+  slug                     String?
+  agent_type               String?
+  commission               Int?
+  annual_collection        Int?
+  intro_youtube            String?
+  created_by               String?
+  tree_seed                String?
+  email                    String?
+  banker                   String?
+  bankin_account           String?
+  introducer               String?
+  ic_front                 String?
+  ic_back                  String?
+  address                  String?
+  creation_date            String?
+  creator                  String?
+  group_member             String?
+  group_name               String?
+  unique_id                String?
+  agent_email_accounts     agent_email_accounts[]
+}
+
+model agent_content {
+  id                Int       @id @default(autoincrement())
+  bubble_id         String?   @unique
+  created_date      DateTime? @db.Timestamptz(6)
+  google_drive_link String?
+  active            Boolean?
+  linked_category   String?
+  modified_date     DateTime? @db.Timestamptz(6)
+  title             String?
+  type              String?
+  created_by        String?
+  synced_at         DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model agent_daily_report {
+  id              Int       @id @default(autoincrement())
+  bubble_id       String    @unique
+  last_synced_at  DateTime? @default(now()) @db.Timestamptz(6)
+  created_at      DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime? @default(now()) @db.Timestamptz(6)
+  activity_type   String?
+  modified_date   DateTime? @db.Timestamptz(6)
+  linked_user     String?
+  linked_customer String?
+  report_point    Int?
+  created_date    DateTime? @db.Timestamptz(6)
+  tag             String[]
+  report_date     DateTime? @db.Timestamptz(6)
+  created_by      String?
+  remark          String?
+}
+
+model agent_email_accounts {
+  id              Int       @id @default(autoincrement())
+  agent_bubble_id String
+  email_prefix    String
+  full_email      String    @unique
+  created_at      DateTime? @default(now()) @db.Timestamptz(6)
+  agent           agent     @relation(fields: [agent_bubble_id], references: [bubble_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model agent_monthly_commission {
+  id                Int       @id @default(autoincrement())
+  bubble_id         String?   @unique
+  linked_invoice    String[]
+  created_by        String?
+  linked_agent      String?
+  record_month      DateTime? @db.Timestamptz(6)
+  total_bonus_comm  Int?
+  total_normal_comm String?
+  created_date      DateTime? @db.Timestamptz(6)
+  modified_date     DateTime? @db.Timestamptz(6)
+  synced_at         DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model agent_monthly_perf {
+  id                  Int       @id @default(autoincrement())
+  bubble_id           String    @unique
+  last_synced_at      DateTime? @default(now()) @db.Timestamptz(6)
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime? @default(now()) @db.Timestamptz(6)
+  total_amount        Decimal?  @db.Decimal
+  created_date        DateTime? @db.Timestamptz(6)
+  record_month        String?
+  linked_user         String?
+  modified_date       DateTime? @db.Timestamptz(6)
+  linked_invoice      String[]
+  created_by          String?
+  all_full_on_date    DateTime? @db.Timestamptz(6)
+  achieved_tier_bonus Decimal?  @db.Decimal
+}
+
+model ai_contact {
+  id            Int       @id @default(autoincrement())
+  bubble_id     String?   @unique
+  whatsapp_no_  String?
+  modified_date DateTime? @db.Timestamptz(6)
+  created_date  DateTime? @db.Timestamptz(6)
+  name          String?
+  created_by    String?
+  synced_at     DateTime? @default(now()) @db.Timestamptz(6)
+  whatsapp_no   String?
+}
+
+model ai_profile {
+  id               Int       @id @default(autoincrement())
+  bubble_id        String?   @unique
+  modified_date    DateTime? @db.Timestamptz(6)
+  created_by       String?
+  name             String?
+  user_instruction String?
+  created_date     DateTime? @db.Timestamptz(6)
+  synced_at        DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model api_key {
+  id             Int             @id @default(autoincrement())
+  key_id         String          @unique(map: "ix_api_key_key_id") @db.VarChar
+  key_hash       String          @db.VarChar
+  service_name   String          @db.VarChar
+  app_domain     String          @db.VarChar
+  permissions    String[]        @db.VarChar
+  active         Boolean?
+  expires_at     DateTime?       @db.Timestamptz(6)
+  created_by     String?         @db.VarChar
+  created_at     DateTime?       @default(now()) @db.Timestamptz(6)
+  legacy_data_01 legacy_data_01? @relation(fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([id], map: "ix_api_key_id")
+}
+
+model api_keys {
+  id          Int       @id @default(autoincrement())
+  domain      String    @unique @db.VarChar(255)
+  api_key     String
+  description String?
+  is_active   Boolean?  @default(true)
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  updated_at  DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([is_active], map: "idx_api_keys_active")
+  @@index([domain], map: "idx_api_keys_domain")
+}
+
+model app_news_articles {
+  id                 Int                 @id @default(autoincrement())
+  headline_id        Int?                @unique
+  title_en           String?             @db.VarChar(500)
+  title_zh           String?             @db.VarChar(500)
+  title_ms           String?             @db.VarChar(500)
+  content_en         String?
+  content_zh         String?
+  content_ms         String?
+  summary_en         String?
+  summary_zh         String?
+  summary_ms         String?
+  tags               String[]
+  created_at         DateTime?           @default(now()) @db.Timestamptz(6)
+  app_news_headlines app_news_headlines? @relation(fields: [headline_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([created_at(sort: Desc)], map: "idx_articles_created")
+  @@index([headline_id], map: "idx_articles_headline_id")
+}
+
+model app_news_headlines {
+  id                Int                @id @default(autoincrement())
+  task_id           Int?
+  headline          String
+  news_date         String?            @db.VarChar(100)
+  source            String?            @db.VarChar(255)
+  search_query      String?
+  status            String?            @default("fresh") @db.VarChar(20)
+  retry_count       Int?               @default(0)
+  error_message     String?
+  created_at        DateTime?          @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?          @default(now()) @db.Timestamptz(6)
+  app_news_articles app_news_articles?
+  app_search_tasks  app_search_tasks?  @relation(fields: [task_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([headline, news_date])
+  @@index([created_at(sort: Desc)], map: "idx_headlines_created")
+  @@index([status], map: "idx_headlines_status")
+  @@index([task_id], map: "idx_headlines_task_id")
+}
+
+model app_search_tasks {
+  id                 Int                  @id @default(autoincrement())
+  name               String               @db.VarChar(255)
+  query              String
+  gems_name          String?              @default("news-search") @db.VarChar(100)
+  gems_url           String?
+  schedule           String?              @default("08:00") @db.VarChar(50)
+  is_active          Boolean?             @default(true)
+  last_run_at        DateTime?            @db.Timestamptz(6)
+  created_at         DateTime?            @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime?            @default(now()) @db.Timestamptz(6)
+  app_news_headlines app_news_headlines[]
+}
+
+model audit_log {
+  id             Int             @id @default(autoincrement())
+  entity_type    String          @db.VarChar
+  entity_id      String          @db.VarChar
+  action         String          @db.VarChar
+  user_id        String?         @db.VarChar
+  old_values     String?
+  new_values     String?
+  ip_address     String?         @db.VarChar
+  created_at     DateTime?       @default(now()) @db.Timestamptz(6)
+  legacy_data_01 legacy_data_01? @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([entity_id], map: "ix_audit_log_entity_id")
+  @@index([id], map: "ix_audit_log_id")
+}
+
+model auth_hub_cors_origins {
+  origin     String    @id @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model auth_hub_otps {
+  phone_number String   @id @db.VarChar(20)
+  code         String   @db.VarChar(10)
+  expires_at   DateTime @db.Timestamp(6)
+}
+
+model auth_session {
+  id             Int             @id @default(autoincrement())
+  session_id     String          @unique(map: "ix_auth_session_session_id") @db.VarChar
+  user_id        String?         @db.VarChar
+  token_hash     String          @db.VarChar
+  expires_at     DateTime        @db.Timestamptz(6)
+  ip_address     String?         @db.VarChar
+  user_agent     String?         @db.VarChar
+  created_at     DateTime?       @default(now()) @db.Timestamptz(6)
+  legacy_data_01 legacy_data_01? @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([id], map: "ix_auth_session_id")
+  @@index([user_id], map: "ix_auth_session_user_id")
+}
+
+model blacklisted_sites {
+  id         Int       @id @default(autoincrement())
+  domain     String    @unique @db.VarChar(255)
+  url        String
+  title      String?
+  reason     String?
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([domain], map: "idx_blacklisted_sites_domain")
+}
+
+model brand {
+  id            Int       @id @default(autoincrement())
+  bubble_id     String?   @unique
+  name          String?
+  created_by    String?
+  modified_date DateTime? @db.Timestamptz(6)
+  created_date  DateTime? @db.Timestamptz(6)
+  logo          String?
+  synced_at     DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model bug_report {
+  id            Int       @id @default(autoincrement())
+  bubble_id     String?   @unique
+  created_date  DateTime? @db.Timestamptz(6)
+  description   String?
+  modified_date DateTime? @db.Timestamptz(6)
+  created_by    String?
+  report_type   String?
+  is_a_update_  Boolean?
+  report_by     String?
+  screenshoot   String[]
+  synced_at     DateTime? @default(now()) @db.Timestamptz(6)
+  is_a_update   DateTime? @db.Timestamptz(6)
+}
+
+model career_invitation {
+  id                    Int       @id @default(autoincrement())
+  bubble_id             String?   @unique
+  message               String?
+  expire_date           DateTime? @db.Timestamptz(6)
+  invitation_code       String?
+  modified_date         DateTime? @db.Timestamptz(6)
+  created_date          DateTime? @db.Timestamptz(6)
+  position_to_offer     String?
+  person_to_invite_name String?
+  created_by            String?
+  linked_agent          String?
+  synced_at             DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model categories {
+  id       String     @id @db.VarChar(50)
+  name     String     @db.VarChar(100)
+  icon     String?    @db.VarChar(50)
+  color    String?    @db.VarChar(20)
+  receipts receipts[]
+}
+
+model category {
+  id              Int       @id @default(autoincrement())
+  bubble_id       String    @unique
+  last_synced_at  DateTime? @default(now()) @db.Timestamptz(6)
+  created_at      DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime? @default(now()) @db.Timestamptz(6)
+  created_date    DateTime? @db.Timestamptz(6)
+  category_name   String?
+  created_by      String?
+  linked_products String[]
+  modified_date   DateTime? @db.Timestamptz(6)
+}
+
+model chat_message {
+  id                  Int                   @id @default(autoincrement())
+  thread_id           Int?
+  sender_id           String                @db.VarChar(255)
+  sender_name         String                @db.VarChar(255)
+  message_type        String                @db.VarChar(50)
+  content             String?
+  file_meta           Json?
+  created_at          DateTime?             @default(now()) @db.Timestamptz(6)
+  tag_role            String?               @db.VarChar(50)
+  is_tag_active       Boolean?              @default(false)
+  chat_thread         chat_thread?          @relation(fields: [thread_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  chat_tag_assignment chat_tag_assignment[]
+
+  @@index([thread_id], map: "idx_chat_message_thread_id")
+}
+
+model chat_tag_assignment {
+  id           Int           @id @default(autoincrement())
+  message_id   Int?
+  user_id      Int?
+  status       String?       @default("pending") @db.VarChar(20)
+  created_at   DateTime?     @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime?     @default(now()) @db.Timestamptz(6)
+  chat_message chat_message? @relation(fields: [message_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user         user?         @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([message_id, user_id])
+  @@index([message_id], map: "idx_chat_tag_assignment_message_id")
+  @@index([status], map: "idx_chat_tag_assignment_status")
+  @@index([user_id], map: "idx_chat_tag_assignment_user_id")
+}
+
+model chat_thread {
+  id           Int            @id @default(autoincrement())
+  invoice_id   String         @unique @db.VarChar(255)
+  created_at   DateTime?      @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime?      @default(now()) @db.Timestamptz(6)
+  chat_message chat_message[]
+
+  @@index([invoice_id], map: "idx_chat_thread_invoice_id")
+}
+
+model commission_adjustment {
+  id               String    @id @default(dbgenerated("(gen_random_uuid())::text"))
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @default(now())
+  agent_id         String
+  agent_name       String
+  amount           Decimal
+  description      String
+  created_by       String
+  report_id        String?
+  adjustment_month String?
+  modified_date    DateTime? @db.Timestamptz(6)
+  created_date     DateTime? @db.Timestamptz(6)
+  linked_agent     String?
+  linked_invoice   String?
+}
+
+model commission_adjustment_v2 {
+  adjustment_id     String   @id
+  report_id         String
+  invoice_bubble_id String
+  agent_id          String
+  adjustment_amount Decimal  @db.Decimal(10, 2)
+  remark            String?
+  created_at        DateTime @default(now())
+  created_by        String?
+
+  @@index([agent_id])
+  @@index([invoice_bubble_id])
+  @@index([report_id])
+}
+
+model company_setting {
+  id                               Int       @id @default(autoincrement())
+  bubble_id                        String?   @unique
+  invoice_request_system_drawing   String[]
+  grand_strategy                   String?
+  created_by                       String?
+  created_date                     DateTime? @db.Timestamptz(6)
+  invoice_count                    Int?
+  seda_request_engineering_drawing String[]
+  modified_date                    DateTime? @db.Timestamptz(6)
+  synced_at                        DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model content_category {
+  id                   Int       @id @default(autoincrement())
+  bubble_id            String?   @unique
+  created_by           String?
+  cat_name             String?
+  linked_agent_content String[]
+  created_date         DateTime? @db.Timestamptz(6)
+  modified_date        DateTime? @db.Timestamptz(6)
+  synced_at            DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model conversation {
+  id            Int       @id @default(autoincrement())
+  bubble_id     String?   @unique
+  created_date  DateTime? @db.Timestamptz(6)
+  modified_date DateTime? @db.Timestamptz(6)
+  created_by    String?
+  synced_at     DateTime? @default(now()) @db.Timestamptz(6)
+  user          String?
+  user_input    String?
+}
+
+model customer {
+  id                       Int                 @id @default(autoincrement())
+  customer_id              String              @unique(map: "customer_bubble_id_key")
+  last_synced_at           DateTime?           @default(now()) @db.Timestamptz(6)
+  created_at               DateTime?           @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime?           @default(now()) @db.Timestamptz(6)
+  name                     String?
+  phone                    String?
+  email                    String?
+  address                  String?
+  city                     String?
+  state                    String?
+  postcode                 String?
+  ic_number                String?
+  linked_seda_registration String?
+  linked_old_customer      String?
+  notes                    String?
+  created_by               String?
+  version                  Int?                @default(1)
+  updated_by               String?
+  profile_picture          String?
+  customer_snapshot        customer_snapshot[]
+  invoice_new              invoice_new[]
+  referral                 referral[]
+}
+
+model customer_history {
+  history_id       Int       @id @default(autoincrement())
+  customer_id      Int?
+  name             String?
+  email            String?
+  phone            String?
+  address          String?
+  city             String?
+  state            String?
+  postcode         String?
+  ic_number        String?
+  notes            String?
+  version          Int?
+  changed_by       String?
+  changed_at       DateTime? @default(now()) @db.Timestamptz(6)
+  change_operation String?
+}
+
+model customer_profile {
+  id              Int       @id @default(autoincrement())
+  bubble_id       String    @unique
+  last_synced_at  DateTime? @default(now()) @db.Timestamptz(6)
+  created_at      DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime? @default(now()) @db.Timestamptz(6)
+  linked_agent    String?
+  address         String?
+  name            String?
+  created_by      String?
+  contact         String?
+  status          String?
+  created_date    DateTime? @db.Timestamptz(6)
+  modified_date   DateTime? @db.Timestamptz(6)
+  whatsapp        String?
+  state           String?
+  link_seda_reg   String?
+  chinese_content Boolean?
+  group_status    Boolean?
+}
+
+model customer_snapshot {
+  id            Int       @id @default(autoincrement())
+  customer_id   Int
+  version       Int       @default(1)
+  snapshot_data Json
+  created_by    String?   @db.VarChar(255)
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+  customer      customer  @relation(fields: [customer_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([customer_id], map: "idx_customer_snapshot_customer_id")
+}
+
+model daily_job_planning {
+  id             Int       @id @default(autoincrement())
+  bubble_id      String?   @unique
+  created_date   DateTime? @db.Timestamptz(6)
+  dealer_code    String?
+  modified_date  DateTime? @db.Timestamptz(6)
+  created_by     String?
+  checkin_person String?
+  check_in_time  DateTime? @db.Timestamptz(6)
+  planning_today String?
+  synced_at      DateTime? @default(now()) @db.Timestamptz(6)
+  today_report   String?
+}
+
+model dealership {
+  id                Int       @id @default(autoincrement())
+  bubble_id         String?   @unique
+  dealer_tier_bonus Decimal?  @db.Decimal
+  dealercode        String?
+  modified_date     DateTime? @db.Timestamptz(6)
+  join_date         DateTime? @db.Timestamptz(6)
+  dealer_name       String?
+  created_date      DateTime? @db.Timestamptz(6)
+  created_by        String?
+  synced_at         DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model department {
+  id                       Int       @id @default(autoincrement())
+  bubble_id                String?   @unique
+  modified_date            DateTime? @db.Timestamptz(6)
+  created_by               String?
+  department_name          String?
+  created_date             DateTime? @db.Timestamptz(6)
+  current_task_last_update DateTime? @db.Timestamptz(6)
+  current_task             String?
+  hod                      String[]
+  member                   String[]
+  assign_task              String[]
+  synced_at                DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model department_report {
+  id                Int       @id @default(autoincrement())
+  bubble_id         String?   @unique
+  linked_department String?
+  linked_comment    String[]
+  content           String?
+  created_date      DateTime? @db.Timestamptz(6)
+  created_by        String?
+  modified_date     DateTime? @db.Timestamptz(6)
+  report_type       String?
+  synced_at         DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model dept_report_comment {
+  id            Int       @id @default(autoincrement())
+  bubble_id     String?   @unique
+  comment       String?
+  modified_date DateTime? @db.Timestamptz(6)
+  created_date  DateTime? @db.Timestamptz(6)
+  created_by    String?
+  linked_report String?
+  by            String?
+  synced_at     DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model discovery_logs {
+  id              Int      @id @default(autoincrement())
+  run_id          String
+  table_name      String
+  field_name      String
+  field_type      String
+  link_status     String?
+  target_table    String?
+  sample_value    String?
+  reason          String?
+  bubble_id_count Int?
+  discovered_at   DateTime @default(now())
+
+  @@index([discovered_at])
+  @@index([run_id])
+  @@index([table_name])
+  @@index([discovered_at], map: "idx_discovery_logs_discovered_at")
+  @@index([run_id], map: "idx_discovery_logs_run_id")
+  @@index([table_name], map: "idx_discovery_logs_table_name")
+}
+
+model ee_calendar {
+  id            Int       @id @default(autoincrement())
+  bubble_id     String?   @unique
+  created_date  DateTime? @db.Timestamptz(6)
+  modified_date DateTime? @db.Timestamptz(6)
+  created_by    String?
+  date          DateTime? @db.Timestamptz(6)
+  synced_at     DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model ee_circular {
+  id               Int       @id @default(autoincrement())
+  bubble_id        String?   @unique
+  active_          Boolean?
+  department       String?
+  title            String?
+  read_by          String[]
+  created_date     DateTime? @db.Timestamptz(6)
+  file             String?
+  created_by       String?
+  date_of_circular DateTime? @db.Timestamptz(6)
+  modified_date    DateTime? @db.Timestamptz(6)
+  synced_at        DateTime? @default(now()) @db.Timestamptz(6)
+  active           Boolean?
+}
+
+model email_logs {
+  id         Int       @id @default(autoincrement())
+  level      String    @db.VarChar(20)
+  message    String
+  metadata   Json?     @default("{}")
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([created_at], map: "idx_email_logs_created_at")
+}
+
+model emails {
+  id            Int       @id @default(autoincrement())
+  resend_id     String?   @unique @db.VarChar(255)
+  from_email    String
+  to_email      String
+  cc_emails     Json?     @default("[]")
+  bcc_emails    Json?     @default("[]")
+  subject       String
+  html_content  String?
+  text_content  String?
+  status        String?   @default("pending") @db.VarChar(50)
+  sent_at       DateTime? @default(now()) @db.Timestamp(6)
+  delivered_at  DateTime? @db.Timestamp(6)
+  opened_at     DateTime? @db.Timestamp(6)
+  clicked_at    DateTime? @db.Timestamp(6)
+  error_message String?
+  metadata      Json?     @default("{}")
+  domain        String    @default("eternalgy.me") @db.VarChar(255)
+
+  @@index([domain], map: "idx_emails_domain")
+  @@index([resend_id], map: "idx_emails_resend_id")
+  @@index([sent_at], map: "idx_emails_sent_at")
+  @@index([status], map: "idx_emails_status")
+  @@index([to_email], map: "idx_emails_to_email")
+}
+
+model epp_gateway {
+  id             Int       @id @default(autoincrement())
+  bubble_id      String    @unique
+  last_synced_at DateTime? @default(now()) @db.Timestamptz(6)
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime? @default(now()) @db.Timestamptz(6)
+  modified_date  DateTime? @db.Timestamptz(6)
+  name           String?
+  created_date   DateTime? @db.Timestamptz(6)
+  type           String?
+  created_by     String?
+}
+
+model epp_option {
+  id               Int       @id @default(autoincrement())
+  bubble_id        String    @unique
+  last_synced_at   DateTime? @default(now()) @db.Timestamptz(6)
+  created_at       DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime? @default(now()) @db.Timestamptz(6)
+  bank             String?
+  created_by       String?
+  created_date     DateTime? @db.Timestamptz(6)
+  modified_date    DateTime? @db.Timestamptz(6)
+  interest_charges Decimal?  @db.Decimal
+  tenures          Int?
+}
+
+model eternalgy_agreement {
+  id                   Int       @id @default(autoincrement())
+  bubble_id            String    @unique
+  last_synced_at       DateTime? @default(now()) @db.Timestamptz(6)
+  created_at           DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime? @default(now()) @db.Timestamptz(6)
+  refund_policy        String?
+  type                 String?
+  modified_date        DateTime? @db.Timestamptz(6)
+  installation_related String?
+  disclaimer           String?
+  privacy_policy       String?
+  created_date         DateTime? @db.Timestamptz(6)
+  created_by           String?
+  warranty             String?
+  version_name         String?
+}
+
+model eternalgynotification {
+  id            Int       @id @default(autoincrement())
+  bubble_id     String?   @unique
+  content       String?
+  modified_date DateTime? @db.Timestamptz(6)
+  title         String?
+  created_date  DateTime? @db.Timestamptz(6)
+  created_by    String?
+  checked_agent String[]
+  gallery_image String[]
+  synced_at     DateTime? @default(now()) @db.Timestamptz(6)
+  youtube_1     String?
+}
+
+model expenses {
+  id                 String    @id @db.VarChar(50)
+  user_id            String    @db.VarChar(100)
+  category           String?   @default("General") @db.VarChar(100)
+  notes              String?
+  receipt_ids        String[]
+  total              Decimal?  @default(0.00) @db.Decimal(12, 2)
+  category_breakdown Json?
+  status             String?   @default("pending_verification") @db.VarChar(50)
+  submitted_at       DateTime? @default(now()) @db.Timestamp(6)
+  verified_at        DateTime? @db.Timestamp(6)
+  verified_by        String?   @db.VarChar(100)
+  verification_notes String?
+  receipts_data      Json?
+}
+
+model financial_projection {
+  id                 Int       @id @default(autoincrement())
+  bubble_id          String?   @unique
+  created_date       DateTime? @db.Timestamptz(6)
+  year               Int?
+  cumulative_earning String?
+  modified_date      DateTime? @db.Timestamptz(6)
+  degradation        String?
+  created_by         String?
+  synced_at          DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model follow_up_notes {
+  id             Int       @id @default(autoincrement())
+  bubble_id      String?   @unique
+  message        String?
+  modified_date  DateTime? @db.Timestamptz(6)
+  linked_invoice String?
+  created_date   DateTime? @db.Timestamptz(6)
+  created_by     String?
+  synced_at      DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model generated_commission_report {
+  report_id              String    @id
+  agent_id               String
+  agent_name             String
+  month_period           String
+  total_basic_commission Decimal
+  total_bonus_commission Decimal
+  total_adjustments      Decimal
+  final_total_commission Decimal
+  commission_paid        Boolean
+  invoice_bubble_ids     Json
+  created_at             DateTime
+  created_by             String?
+  paid_at                DateTime?
+  paid_by                String?
+}
+
+model invoice {
+  id                            Int                             @id @default(autoincrement())
+  bubble_id                     String                          @unique
+  last_synced_at                DateTime?                       @default(now()) @db.Timestamptz(6)
+  created_at                    DateTime?                       @default(now()) @db.Timestamptz(6)
+  updated_at                    DateTime?                       @default(now()) @db.Timestamptz(6)
+  visit                         Int?
+  eligible_amount_description   String?
+  linked_seda_registration      String?
+  normal_commission             Decimal?                        @db.Decimal
+  linked_agent                  String?
+  performance_tier_month        Int?
+  full_payment_date             DateTime?                       @db.Timestamptz(6)
+  modified_date                 DateTime?                       @db.Timestamptz(6)
+  need_approval                 Boolean?
+  linked_package                String?
+  locked_package                Boolean?
+  linked_customer               String?
+  panel_qty                     Int?
+  dealercode                    String?
+  linked_agreement              String?
+  performance_tier_year         Int?
+  invoice_id                    Int?
+  type                          String?
+  last_payment_date             DateTime?                       @db.Timestamptz(6)
+  approval_status               String?
+  st_payment_date               DateTime?                       @map("1st_payment_date") @db.Timestamptz(6)
+  commission_paid               Boolean?
+  paid                          Boolean?
+  version                       Int?
+  amount_eligible_for_comm      Decimal?                        @db.Decimal
+  nd_payment                    Int?                            @map("2nd_payment")
+  created_by                    String?
+  linked_payment                String[]
+  amount                        Decimal?                        @db.Decimal
+  invoice_date                  DateTime?                       @db.Timestamptz(6)
+  st_payment                    Int?                            @map("1st_payment")
+  logs                          String?
+  linked_stock_transaction      String[]
+  stamp_cash_price              Decimal?                        @db.Decimal
+  created_date                  DateTime?                       @db.Timestamptz(6)
+  stock_status_inv              String?
+  linked_invoice_item           String[]
+  perf_tier_commission          Int?
+  linked_agent_monthly_perf     String?
+  how_you_win                   String?
+  stock_status                  String?
+  customer_average_tnb          Int?
+  estimated_saving              Decimal?                        @db.Decimal
+  linked_roof_image             String[]
+  description                   String?
+  state                         String?
+  linked_notification           String[]
+  linked_follow_up              String[]
+  case_status                   String?
+  referrer_name                 String?
+  customer_signature            String?
+  signature_date                DateTime?                       @db.Timestamptz(6)
+  estimated_new_bill_amount     Decimal?                        @db.Decimal
+  effective_epp                 Decimal?                        @db.Decimal
+  lead_source                   String?
+  strategic_va                  Decimal?                        @db.Decimal
+  hide_payment_terms            Boolean?
+  premium_electrical_job        Boolean?
+  panel_rating                  Int?
+  custom_proposal               String?
+  package_type                  String?
+  request_urgent_submission     String?
+  linked_voucher                String[]
+  approved_toberemove           Boolean?
+  user_manual_pdf               String?
+  linked_payment_plan           String?
+  linked_saving_report          String?
+  linked_lead_from_customer     String[]
+  achieved_monthly_anp          Decimal?                        @db.Decimal
+  st_payment__                  String?                         @map("1st_payment__")
+  nd_payment__                  String?                         @map("2nd_payment__")
+  stock_status__                String?
+  invoice_number                String?                         @db.VarChar(50)
+  status                        String?                         @db.VarChar(50)
+  is_latest                     Boolean?                        @default(true)
+  package_id                    String?                         @db.VarChar(255)
+  discount_percent              Decimal?                        @default(0) @db.Decimal
+  voucher_code                  String?                         @db.VarChar(50)
+  total_amount                  Decimal?                        @default(0) @db.Decimal
+  paid_amount                   Decimal?                        @default(0) @db.Decimal
+  balance_due                   Decimal?                        @default(0) @db.Decimal
+  sent_at                       DateTime?                       @db.Timestamptz(6)
+  viewed_at                     DateTime?                       @db.Timestamptz(6)
+  paid_at                       DateTime?                       @db.Timestamptz(6)
+  share_token                   String?                         @db.VarChar(255)
+  share_expires_at              DateTime?                       @db.Timestamptz(6)
+  share_enabled                 Boolean?                        @default(false)
+  package_name_snapshot         String?
+  template_id                   String?                         @db.VarChar(255)
+  agent_markup                  Decimal?                        @default(0) @db.Decimal
+  share_access_count            Int?                            @default(0)
+  root_id                       String?
+  parent_id                     String?
+  customer_notes                String?
+  internal_notes                String?
+  discount_fixed                Decimal?                        @default(0) @db.Decimal
+  linked_old_invoice            String?                         @db.VarChar(255)
+  migration_status              String?                         @db.VarChar(50)
+  customer_name_snapshot        String?                         @db.VarChar(255)
+  customer_email_snapshot       String?                         @db.VarChar(255)
+  customer_phone_snapshot       String?                         @db.VarChar(50)
+  customer_address_snapshot     String?
+  profile_picture_snapshot      String?
+  pv_system_drawing             String[]
+  follow_up_date                DateTime?                       @db.Timestamptz(6)
+  percent_of_total_amount       Decimal?                        @default(0) @db.Decimal
+  commission_finalized          String?
+  creation_date                 String?
+  creator                       String?
+  final_comm_payment_amount     String?
+  installation_date             String?
+  installation_status           String?
+  payment_method                String?
+  reject_reason                 String?
+  remark_financne               String?
+  special_comm                  String?
+  check_boxed                   String?
+  feedback                      String?
+  unique_id                     String?
+  invoice_snapshot              invoice_snapshot[]
+  legacy_ini_to_be_remove_later legacy_ini_to_be_remove_later[]
+}
+
+model invoice_action {
+  id          Int       @id @default(autoincrement())
+  bubble_id   String    @unique @db.VarChar(255)
+  invoice_id  String    @db.VarChar(255)
+  action_type String    @db.VarChar(50)
+  details     Json?
+  created_by  String?   @db.VarChar(255)
+  created_at  DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([invoice_id], map: "idx_invoice_action_invoice_id")
+}
+
+model invoice_item {
+  id             Int       @id @default(autoincrement())
+  bubble_id      String    @unique
+  last_synced_at DateTime? @default(now()) @db.Timestamptz(6)
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime? @default(now()) @db.Timestamptz(6)
+  description    String?
+  modified_date  DateTime? @db.Timestamptz(6)
+  qty            Decimal?  @db.Decimal
+  amount         Decimal?  @db.Decimal
+  unit_price     Decimal?  @db.Decimal
+  created_by     String?
+  created_date   DateTime? @db.Timestamptz(6)
+  is_a_package   Boolean?
+  inv_item_type  String?
+  linked_package String?
+  epp            Decimal?  @db.Decimal
+  linked_invoice String?
+  sort           Decimal?  @db.Decimal
+  linked_voucher String?
+  voucher_remark String?
+  creation_date  String?
+  creator        String?
+  slug           String?
+  unique_id      String?
+}
+
+model invoice_new {
+  id                        Int       @id @default(autoincrement())
+  bubble_id                 String    @unique(map: "ix_invoice_new_bubble_id") @db.VarChar
+  template_id               String?   @db.VarChar
+  customer_id               Int?
+  customer_name_snapshot    String    @db.VarChar
+  customer_address_snapshot String?
+  customer_phone_snapshot   String?   @db.VarChar
+  customer_email_snapshot   String?   @db.VarChar
+  agent_id                  String?   @db.VarChar
+  agent_name_snapshot       String?   @db.VarChar
+  package_id                String?   @db.VarChar
+  package_name_snapshot     String?   @db.VarChar
+  invoice_number            String    @unique(map: "ix_invoice_new_invoice_number") @db.VarChar
+  invoice_date              String    @db.VarChar
+  due_date                  String?   @db.VarChar
+  subtotal                  Decimal   @db.Decimal(15, 2)
+  sst_rate                  Decimal?  @db.Decimal(5, 2)
+  sst_amount                Decimal   @db.Decimal(15, 2)
+  discount_amount           Decimal   @db.Decimal(15, 2)
+  discount_percent          Decimal?  @db.Decimal(5, 2)
+  voucher_code              String?   @db.VarChar
+  voucher_amount            Decimal?  @db.Decimal(15, 2)
+  total_amount              Decimal   @db.Decimal(15, 2)
+  status                    String?   @db.VarChar
+  paid_amount               Decimal?  @db.Decimal(15, 2)
+  internal_notes            String?
+  customer_notes            String?
+  share_token               String?   @unique(map: "ix_invoice_new_share_token") @db.VarChar
+  share_enabled             Boolean?
+  share_expires_at          DateTime? @db.Timestamptz(6)
+  share_access_count        Int?
+  linked_old_invoice        String?   @db.VarChar
+  migration_status          String?   @db.VarChar
+  created_by                String?   @db.VarChar
+  created_at                DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime? @default(now()) @db.Timestamptz(6)
+  sent_at                   DateTime? @db.Timestamptz(6)
+  viewed_at                 DateTime? @db.Timestamptz(6)
+  paid_at                   DateTime? @db.Timestamptz(6)
+  agent_markup              Decimal?  @default(0) @db.Decimal(15, 2)
+  discount_fixed            Decimal?  @default(0) @db.Decimal(15, 2)
+  version                   Int?      @default(1)
+  root_id                   String?   @db.VarChar(255)
+  parent_id                 String?   @db.VarChar(255)
+  is_latest                 Boolean?  @default(true)
+  customer                  customer? @relation(fields: [customer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([is_latest], map: "idx_invoice_new_is_latest")
+  @@index([root_id], map: "idx_invoice_new_root_id")
+  @@index([customer_id], map: "ix_invoice_new_customer_id")
+  @@index([id], map: "ix_invoice_new_id")
+}
+
+model invoice_payment_planning {
+  id                               Int       @id @default(autoincrement())
+  bubble_id                        String?   @unique
+  linked_invoice                   String?
+  payment_method_3                 String?
+  payment_1_charges                Int?
+  final_payment_amount___inclusive String?
+  created_by                       String?
+  epp_option_3                     String?
+  st_payment_amount___inclusive    String?   @map("1st_payment_amount___inclusive")
+  payment_2_epp_charges            Int?
+  payment_3_epp_charges            String?
+  nd_payment_amount___inclusive    String?   @map("2nd_payment_amount___inclusive")
+  payment_method_1                 String?
+  epp_option_2                     String?
+  payment_method_2                 String?
+  modified_date                    DateTime? @db.Timestamptz(6)
+  created_date                     DateTime? @db.Timestamptz(6)
+  synced_at                        DateTime? @default(now()) @db.Timestamptz(6)
+  epp_option_1                     String?
+  final_payment_amount_inclusive   Decimal?  @db.Decimal
+  nd_payment_amount_inclusive      Decimal?  @map("2nd_payment_amount_inclusive") @db.Decimal
+  st_payment_amount_inclusive      Decimal?  @map("1st_payment_amount_inclusive") @db.Decimal
+}
+
+model invoice_snapshot {
+  id            Int       @id @default(autoincrement())
+  invoice_id    Int?
+  version       Int
+  snapshot_data Json
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+  created_by    String?   @db.VarChar(255)
+  invoice       invoice?  @relation(fields: [invoice_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model invoice_template {
+  id                   Int             @id @default(autoincrement())
+  bubble_id            String          @unique(map: "ix_invoice_template_bubble_id") @db.VarChar
+  template_name        String          @db.VarChar
+  company_name         String          @db.VarChar
+  company_address      String
+  company_phone        String?         @db.VarChar
+  company_email        String?         @db.VarChar
+  sst_registration_no  String?         @db.VarChar
+  bank_name            String?         @db.VarChar
+  bank_account_no      String?         @db.VarChar
+  bank_account_name    String?         @db.VarChar
+  logo_url             String?         @db.VarChar
+  terms_and_conditions String?
+  active               Boolean?
+  is_default           Boolean?
+  created_by           String?         @db.VarChar
+  created_at           DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime?       @default(now()) @db.Timestamptz(6)
+  disclaimer           String?
+  apply_sst            Boolean?        @default(false)
+  legacy_data_01       legacy_data_01? @relation(fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([id], map: "ix_invoice_template_id")
+}
+
+model join_us_form {
+  id            Int       @id @default(autoincrement())
+  bubble_id     String?   @unique
+  mobile        String?
+  modified_date DateTime? @db.Timestamptz(6)
+  name          String?
+  created_date  DateTime? @db.Timestamptz(6)
+  created_by    String?
+  email         String?
+  synced_at     DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model legacy_data_01 {
+  id                 Int                @id(map: "auth_user_pkey") @default(autoincrement())
+  user_id            String             @unique(map: "ix_auth_user_user_id") @db.VarChar
+  whatsapp_number    String             @unique(map: "ix_auth_user_whatsapp_number") @db.VarChar
+  whatsapp_formatted String             @db.VarChar
+  name               String?            @db.VarChar
+  role               String             @db.VarChar
+  active             Boolean?
+  app_permissions    String[]           @db.VarChar
+  created_at         DateTime?          @default(now()) @db.Timestamptz(6)
+  last_login_at      DateTime?          @db.Timestamptz(6)
+  last_otp_at        DateTime?          @db.Timestamptz(6)
+  last_otp_code      String?            @db.VarChar
+  api_key            api_key[]
+  audit_log          audit_log[]
+  auth_session       auth_session[]
+  invoice_template   invoice_template[]
+
+  @@index([id], map: "ix_auth_user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model legacy_ini_to_be_remove_later {
+  id                    Int       @id(map: "invoice_new_item_pkey") @default(autoincrement())
+  bubble_id             String    @unique(map: "ix_invoice_new_item_bubble_id") @db.VarChar
+  invoice_id            String?   @db.VarChar
+  product_id            String?   @db.VarChar
+  product_name_snapshot String?   @db.VarChar
+  description           String
+  qty                   Decimal   @db.Decimal(10, 2)
+  unit_price            Decimal   @db.Decimal(15, 2)
+  discount_percent      Decimal?  @db.Decimal(5, 2)
+  total_price           Decimal   @db.Decimal(15, 2)
+  sort_order            Int?
+  created_at            DateTime? @default(now()) @db.Timestamptz(6)
+  item_type             String?   @default("package") @db.VarChar(20)
+  invoice               invoice?  @relation(fields: [invoice_id], references: [bubble_id], onDelete: NoAction, onUpdate: NoAction, map: "invoice_new_item_invoice_id_fkey")
+
+  @@index([id], map: "ix_invoice_new_item_id")
+  @@index([invoice_id], map: "ix_invoice_new_item_invoice_id")
+}
+
+model news_links {
+  id                Int                @id @default(autoincrement())
+  url               String
+  url_hash          String             @unique @db.VarChar(64)
+  title             String?
+  discovered_at     DateTime?          @default(now()) @db.Timestamp(6)
+  source_task       String?            @db.VarChar(255)
+  status            String?            @default("pending") @db.VarChar(50)
+  error_message     String?
+  processed_at      DateTime?          @db.Timestamp(6)
+  last_checked      DateTime?          @db.Timestamp(6)
+  created_at        DateTime?          @default(now()) @db.Timestamp(6)
+  processed_content processed_content?
+
+  @@index([source_task], map: "idx_news_links_source_task")
+  @@index([status], map: "idx_news_links_status")
+  @@index([url_hash], map: "idx_news_links_url_hash")
+}
+
+model otps {
+  phone_number String   @id @db.VarChar(20)
+  code         String   @db.VarChar(6)
+  expires_at   DateTime @db.Timestamp(6)
+}
+
+/// This model has been renamed to 'Renamedpackage' during introspection, because the original name 'package' is reserved.
+model Renamedpackage {
+  id                  Int       @id @default(autoincrement())
+  bubble_id           String    @unique
+  last_synced_at      DateTime? @default(now()) @db.Timestamptz(6)
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime? @default(now()) @db.Timestamptz(6)
+  special             Boolean?
+  panel_qty           Int?
+  created_date        DateTime? @db.Timestamptz(6)
+  price               Decimal?  @db.Decimal
+  invoice_desc        String?
+  linked_package_item String[]
+  created_by          String?
+  package_name        String?
+  panel               String?
+  type                String?
+  max_discount        Int?
+  need_approval       Boolean?
+  active              Boolean?
+  modified_date       DateTime? @db.Timestamptz(6)
+  password            String?
+
+  @@map("package")
+}
+
+model package_formula {
+  id            Int       @id @default(autoincrement())
+  bubble_id     String?   @unique
+  created_by    String?
+  baseprice     Int?
+  created_date  DateTime? @db.Timestamptz(6)
+  formula_name  String?
+  installation  Int?
+  skylift       Int?
+  per_invoice   Int?
+  electrical    Int?
+  panel_price   Int?
+  modified_date DateTime? @db.Timestamptz(6)
+  dcac_ratio    Int?
+  synced_at     DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model package_item {
+  id             Int       @id @default(autoincrement())
+  bubble_id      String    @unique
+  last_synced_at DateTime? @default(now()) @db.Timestamptz(6)
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime? @default(now()) @db.Timestamptz(6)
+  total_cost     Int?
+  created_by     String?
+  modified_date  DateTime? @db.Timestamptz(6)
+  created_date   DateTime? @db.Timestamptz(6)
+  product        String?
+  qty            Int?
+  sort           Int?
+  inventory      Boolean?
+}
+
+model package_test {
+  id                     Int       @id @default(autoincrement())
+  bubble_id              String?   @unique
+  inverter_01            Int?
+  recal                  Boolean?
+  created_date           DateTime? @db.Timestamptz(6)
+  created_by             String?
+  price                  Int?
+  modified_date          DateTime? @db.Timestamptz(6)
+  ratio                  Decimal?  @db.Decimal
+  panel_count            Int?
+  system_size            Decimal?  @db.Decimal
+  price_without_inverter Int?
+  synced_at              DateTime? @default(now()) @db.Timestamptz(6)
+  micro_2_2              String?
+  inverter_02            String?
+}
+
+model payment {
+  id                Int       @id @default(autoincrement())
+  bubble_id         String    @unique
+  last_synced_at    DateTime? @default(now()) @db.Timestamptz(6)
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+  payment_method    String?
+  modified_date     DateTime? @db.Timestamptz(6)
+  amount            Decimal?  @db.Decimal
+  created_by        String?
+  linked_agent      String?
+  created_date      DateTime? @db.Timestamptz(6)
+  remark            String?
+  payment_date      DateTime? @db.Timestamptz(6)
+  linked_invoice    String?
+  linked_customer   String?
+  payment_index     Decimal?  @db.Decimal
+  attachment        String[]
+  verified_by       String?
+  edit_history      String?
+  issuer_bank       String?
+  epp_month         Decimal?  @db.Decimal
+  payment_method_v2 String?
+  terminal          String?
+  bank_charges      Decimal?  @db.Decimal
+  epp_type          String?
+  creation_date     String?
+  creator           String?
+  referrer          String?
+  actual_received   String?
+  unique_id         String?
+}
+
+model pending_schema_patches {
+  id                  Int       @id @default(autoincrement())
+  table_name          String
+  field_name          String
+  original_field_name String?
+  suggested_type      String
+  error_message       String?
+  status              String    @default("pending")
+  created_at          DateTime  @default(now())
+  approved_at         DateTime?
+  approved_by         String?
+  executed_at         DateTime?
+  execution_result    String?
+  sync_run_id         String?
+
+  @@unique([table_name, field_name])
+}
+
+model processed_content {
+  id                 Int         @id @default(autoincrement())
+  link_id            Int?        @unique
+  title              String?
+  title_en           String?
+  title_zh           String?
+  title_ms           String?
+  content            String?
+  translated_content String?
+  tags               String[]
+  country            String?     @db.VarChar(2)
+  news_date          DateTime?   @db.Date
+  metadata           Json?
+  created_at         DateTime?   @default(now()) @db.Timestamp(6)
+  updated_at         DateTime?   @default(now()) @db.Timestamp(6)
+  news_links         news_links? @relation(fields: [link_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([country], map: "idx_processed_content_country")
+  @@index([link_id], map: "idx_processed_content_link_id")
+  @@index([news_date], map: "idx_processed_content_news_date")
+  @@index([tags], map: "idx_processed_content_tags", type: Gin)
+}
+
+model product {
+  id                    Int       @id @default(autoincrement())
+  bubble_id             String    @unique
+  last_synced_at        DateTime? @default(now()) @db.Timestamptz(6)
+  created_at            DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime? @default(now()) @db.Timestamptz(6)
+  linked_brand          String?
+  inventory             Boolean?
+  image                 String?
+  modified_date         DateTime? @db.Timestamptz(6)
+  created_date          DateTime? @db.Timestamptz(6)
+  warranty_name         String?
+  active                Boolean?
+  cost_price            Decimal?  @db.Decimal
+  selling_price         Decimal?  @db.Decimal
+  description           String?
+  linked_category       String?
+  name                  String?
+  warranty_link         String?
+  label                 String?
+  pdf_product           String?
+  product_warranty_desc String?
+  solar_output_rating   Int?
+  created_by            String?
+  inverter_rating       Int?
+}
+
+model query_task_runs {
+  id         Int       @id @default(autoincrement())
+  task_name  String    @db.VarChar(255)
+  summary    Json
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([created_at(sort: Desc)], map: "idx_query_task_runs_created_at")
+  @@index([task_name], map: "idx_query_task_runs_task_name")
+}
+
+model query_tasks {
+  id                Int       @id @default(autoincrement())
+  task_name         String    @unique @db.VarChar(255)
+  prompt_template   String
+  is_active         Boolean?  @default(true)
+  schedule          String?   @db.VarChar(100)
+  last_run          DateTime? @db.Timestamp(6)
+  total_runs        Int?      @default(0)
+  total_links_found Int?      @default(0)
+  created_at        DateTime? @default(now()) @db.Timestamp(6)
+  updated_at        DateTime? @default(now()) @db.Timestamp(6)
+  model             String?   @db.VarChar(255)
+
+  @@index([is_active], map: "idx_query_tasks_is_active")
+  @@index([task_name], map: "idx_query_tasks_task_name")
+}
+
+model receipts {
+  id                   String      @id @db.VarChar(50)
+  user_id              String      @db.VarChar(100)
+  file_name            String      @db.VarChar(255)
+  original_name        String      @db.VarChar(255)
+  mime_type            String?     @db.VarChar(100)
+  file_size            BigInt?
+  original_size        BigInt?
+  file_path            String?
+  ocr_data             Json?
+  category_id          String?     @db.VarChar(50)
+  status               String?     @default("processed") @db.VarChar(20)
+  duplicate_status     String?     @default("none") @db.VarChar(20)
+  duplicate_of         String?     @db.VarChar(50)
+  duplicate_confidence Float?
+  potential_duplicates Json?
+  tamper_check         Json?
+  tamper_checked_at    DateTime?   @db.Timestamp(6)
+  uploaded_at          DateTime?   @default(now()) @db.Timestamp(6)
+  processed_at         DateTime?   @default(now()) @db.Timestamp(6)
+  updated_at           DateTime?   @default(now()) @db.Timestamp(6)
+  expense_id           String?     @db.VarChar(50)
+  categories           categories? @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model received_emails {
+  id           Int       @id @default(autoincrement())
+  email_id     String?   @unique @db.VarChar(255)
+  message_id   String?   @db.VarChar(255)
+  from_email   String
+  to_email     String
+  subject      String?
+  html_content String?
+  text_content String?
+  attachments  Json?     @default("[]")
+  headers      Json?     @default("{}")
+  raw_data     Json?     @default("{}")
+  received_at  DateTime? @default(now()) @db.Timestamp(6)
+  domain       String    @default("eternalgy.me") @db.VarChar(255)
+  is_read      Boolean?  @default(false)
+
+  @@index([domain], map: "idx_received_emails_domain")
+  @@index([email_id], map: "idx_received_emails_email_id")
+  @@index([received_at], map: "idx_received_emails_received_at")
+  @@index([to_email], map: "idx_received_emails_to_email")
+}
+
+model referal_contact {
+  id              Int       @id @default(autoincrement())
+  bubble_id       String?   @unique
+  modified_date   DateTime? @db.Timestamptz(6)
+  created_date    DateTime? @db.Timestamptz(6)
+  lead_name       String?
+  lead_contact_no String?
+  linked_agent    String?
+  linked_invoice  String?
+  created_by      String?
+  refer_by        String?
+  status          String?
+  synced_at       DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model referral {
+  id                      Int       @id @default(autoincrement())
+  bubble_id               String    @unique @db.VarChar(50)
+  linked_customer_profile String    @db.VarChar(50)
+  name                    String    @db.VarChar(255)
+  relationship            String?   @db.VarChar(100)
+  mobile_number           String?   @db.VarChar(20)
+  status                  String?   @default("Pending") @db.VarChar(50)
+  created_at              DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime? @default(now()) @db.Timestamptz(6)
+  linked_agent            String?   @db.VarChar(50)
+  deal_value              Decimal?  @default(0) @db.Decimal(10, 2)
+  commission_earned       Decimal?  @default(0) @db.Decimal(10, 2)
+  linked_invoice          String?   @db.VarChar(50)
+  customer                customer  @relation(fields: [linked_customer_profile], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model relationship_discovery_status {
+  id           Int      @id @default(autoincrement())
+  source_table String
+  source_field String
+  field_type   String
+  link_status  String?
+  target_table String?
+  last_checked DateTime @default(now())
+  created_at   DateTime @default(now())
+
+  @@unique([source_table, source_field])
+}
+
+model rewriter_prompts {
+  id         Int       @id @default(autoincrement())
+  prompt     String
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  model      String?   @db.VarChar(255)
+}
+
+model saving_report {
+  id                        Int       @id @default(autoincrement())
+  bubble_id                 String?   @unique
+  modified_date             DateTime? @db.Timestamptz(6)
+  created_date              DateTime? @db.Timestamptz(6)
+  panel_type                Int?
+  panel_qty                 Int?
+  linked_invoice            String?
+  created_by                String?
+  sun_peak                  Decimal?  @db.Decimal
+  linked_ori_bill           String?
+  after_solar_bill          String?
+  morning_usage             Int?
+  export_generation         Int?
+  morning_offset_generation Int?
+  solar_generation          Int?
+  synced_at                 DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model schema_descriptions {
+  id             Int       @id @default(autoincrement())
+  table_name     String
+  column_name    String
+  description    String
+  data_type      String?
+  is_nullable    String?
+  column_default String?
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_by     String?
+}
+
+model seda_registration {
+  id                             Int       @id @default(autoincrement())
+  bubble_id                      String    @unique
+  last_synced_at                 DateTime? @default(now()) @db.Timestamptz(6)
+  created_at                     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                     DateTime? @default(now()) @db.Timestamptz(6)
+  reg_status                     String?
+  created_by                     String?
+  drawing_system_submitted       Boolean?
+  modified_date                  DateTime? @db.Timestamptz(6)
+  state                          String?
+  redex_status                   String?
+  roof_images                    String[]
+  sunpeak_hours                  Decimal?  @db.Decimal
+  system_size_in_form_kwp        Decimal?  @db.Decimal
+  created_date                   DateTime? @db.Timestamptz(6)
+  agent                          String?
+  project_price                  Decimal?  @db.Decimal
+  system_size                    Decimal?  @db.Decimal
+  city                           String?
+  linked_customer                String?
+  inverter_kwac                  Decimal?  @db.Decimal
+  slug                           String?
+  estimated_monthly_saving       Decimal?  @db.Decimal
+  average_tnb                    Decimal?  @db.Decimal
+  price_category                 String?
+  g_electric_folder_link         String?
+  g_roof_folder_link             String?
+  installation_address           String?
+  linked_invoice                 String[]
+  customer_signature             String?
+  email                          String?
+  ic_copy_back                   String?
+  ic_copy_front                  String?
+  tnb_bill_3                     String?
+  tnb_bill_1                     String?
+  tnb_meter                      String?
+  e_contact_no                   String?
+  tnb_bill_2                     String?
+  drawing_pdf_system             String[]
+  e_contact_name                 String?
+  seda_status                    String?
+  version                        Int?
+  nem_application_no             String?
+  e_contact_relationship         String?
+  ic_no                          String?
+  request_drawing_date           DateTime? @db.Timestamptz(6)
+  phase_type                     String?
+  special_remark                 String?
+  tnb_account_no                 String?
+  nem_cert                       String?
+  property_ownership_prove       String?
+  inverter_serial_no             String?
+  tnb_meter_install_date         DateTime? @db.Timestamptz(6)
+  tnb_meter_status               String?
+  first_completion_date          DateTime? @db.Timestamptz(6)
+  e_contact_mykad                String?
+  mykad_pdf                      String?
+  nem_type                       String?
+  e_email                        String?
+  redex_remark                   String?
+  site_images                    String[]
+  company_registration_no        String?
+  drawing_system_actual          String[]
+  check_tnb_bill_and_meter_image Boolean?
+  check_mykad                    Boolean?
+  check_ownership                Boolean?
+  check_fill_in_detail           Boolean?
+  drawing_engineering_seda_pdf   String[]
+  postcode                       String?
+  share_token                    String?   @unique @db.VarChar(255)
+  share_enabled                  Boolean?  @default(true)
+  share_expires_at               DateTime? @db.Timestamp(6)
+  st_generation                  String?   @map("1st_generation")
+  creation_date                  String?
+  creator                        String?
+  drawing_engineer_seda_done     String?
+  epcc                           String?
+  epcc_remark                    String?
+  g_folder_seda_doc              String?
+  house_ownership_doc_type       String?
+  house_ownership_image          String?
+  if_counter_date                String?
+  installation_appointment       String?
+  installment_tenure             String?
+  inverter                       String?
+  link_appointment               String?
+  overwrite_redex_date           String?
+  seda_application_fee           String?
+  solar_panel_type               String?
+  tnb_status                     String?
+  chat_deleted                   String?
+  unique_id                      String?
+}
+
+model submit_payment {
+  id                 Int       @id @default(autoincrement())
+  bubble_id          String    @unique
+  last_synced_at     DateTime? @default(now()) @db.Timestamptz(6)
+  created_at         DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime? @default(now()) @db.Timestamptz(6)
+  terminal           String?
+  payment_date       DateTime? @db.Timestamptz(6)
+  created_date       DateTime? @db.Timestamptz(6)
+  amount             Decimal?  @db.Decimal
+  linked_invoice     String?
+  payment_method_v2  String?
+  modified_date      DateTime? @db.Timestamptz(6)
+  attachment         String?
+  created_by         String?
+  linked_customer    String?
+  linked_agent       String?
+  linked_installment String?
+  issuer_bank        String?
+}
+
+model submitted_payment {
+  id                 Int       @id @default(autoincrement())
+  bubble_id          String
+  last_synced_at     DateTime? @db.Timestamptz(6)
+  created_at         DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime? @default(now()) @db.Timestamptz(6)
+  payment_method     String?
+  modified_date      DateTime? @db.Timestamptz(6)
+  amount             Decimal?  @db.Decimal
+  created_by         String?
+  linked_agent       String?
+  created_date       DateTime? @db.Timestamptz(6)
+  remark             String?
+  payment_date       DateTime? @db.Timestamptz(6)
+  linked_invoice     String?
+  linked_customer    String?
+  payment_index      Decimal?  @db.Decimal
+  attachment         String[]
+  verified_by        String?
+  edit_history       String?
+  issuer_bank        String?
+  epp_month          Decimal?  @db.Decimal
+  payment_method_v2  String?
+  terminal           String?
+  bank_charges       Decimal?  @db.Decimal
+  epp_type           String?
+  status             String?   @default("pending") @db.VarChar(50)
+  creation_date      String?
+  creator            String?
+  epp                String?
+  linked_installment String?
+  payment_type       String?
+  referrer           String?
+  slug               String?
+  unique_id          String?
+
+  @@index([linked_invoice], map: "idx_submitted_payment_linked_invoice")
+}
+
+model support_ticket {
+  id                  Int       @id @default(autoincrement())
+  bubble_id           String?   @unique
+  created_date        DateTime? @db.Timestamptz(6)
+  modified_date       DateTime? @db.Timestamptz(6)
+  created_by          String?
+  link_customer       String?
+  problem_description String?
+  technician_remark   String?
+  status              String?
+  title               String?
+  images              String[]
+  synced_at           DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model sync_cursors {
+  id           Int      @id @default(autoincrement())
+  table_name   String   @unique
+  last_cursor  Int      @default(0)
+  last_sync_at DateTime @default(now())
+  sync_run_id  String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @default(now())
+}
+
+model sync_progress {
+  id                 Int       @id @default(autoincrement())
+  session_id         String    @unique
+  status             String
+  total_invoices     Int       @default(0)
+  synced_invoices    Int       @default(0)
+  current_invoice_id String?
+  date_from          String?
+  date_to            String?
+  error_message      String?
+  started_at         DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime? @default(now()) @db.Timestamptz(6)
+  completed_at       DateTime? @db.Timestamptz(6)
+
+  @@index([session_id], map: "idx_sync_progress_session_id")
+  @@index([status], map: "idx_sync_progress_status")
+}
+
+model sync_status {
+  id           String    @id
+  running      Boolean   @default(false)
+  progress     Int       @default(0)
+  currentTable String?
+  lastSync     DateTime?
+  error        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime
+}
+
+model synced_records {
+  id             String   @id
+  bubble_id      String   @unique
+  data_type      String
+  raw_data       Json
+  processed_data Json?
+  synced_at      DateTime @default(now())
+  updated_at     DateTime
+
+  @@index([bubble_id])
+  @@index([data_type])
+}
+
+model system_logs {
+  id         Int       @id @default(autoincrement())
+  timestamp  DateTime  @db.Timestamptz(6)
+  run_id     String    @db.VarChar(50)
+  level      String    @db.VarChar(10)
+  context    String    @db.VarChar(20)
+  message    String
+  metadata   Json?
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([context], map: "idx_system_logs_context")
+  @@index([level], map: "idx_system_logs_level")
+  @@index([run_id], map: "idx_system_logs_run_id")
+  @@index([timestamp(sort: Desc)], map: "idx_system_logs_timestamp")
+}
+
+model system_parameter {
+  key         String    @id @db.VarChar(255)
+  value       String
+  description String?
+  updated_at  DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model system_setting {
+  id               Int       @id @default(autoincrement())
+  bubble_id        String?   @unique
+  invoice_id_run   Int?
+  landed_view      Int?
+  assistant_prompt String?
+  epp_default_rate Decimal?  @db.Decimal
+  created_date     DateTime? @db.Timestamptz(6)
+  whatsapp_click   Int?
+  created_by       String?
+  modified_date    DateTime? @db.Timestamptz(6)
+  synced_at        DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model tag_registry {
+  id          Int         @id @default(autoincrement())
+  tag         String      @unique(map: "ix_tag_registry_tag") @db.VarChar
+  category    tagcategory
+  description String?     @db.VarChar
+  created_at  DateTime?   @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime?   @default(now()) @db.Timestamptz(6)
+
+  @@index([id], map: "ix_tag_registry_id")
+}
+
+model tariff_b_d_database {
+  id            Int       @id @default(autoincrement())
+  bubble_id     String?   @unique
+  created_by    String?
+  and_above     Decimal?  @map("201_and_above") @db.Decimal
+  icpt          Decimal?  @db.Decimal
+  kwtbb         Decimal?  @db.Decimal
+  created_date  DateTime? @db.Timestamptz(6)
+  usage         Int?
+  modified_date DateTime? @db.Timestamptz(6)
+  jumlah        Decimal?  @db.Decimal
+  first_200kwh  Int?
+  tariff_type   String?
+  synced_at     DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model terminal {
+  id                       Int       @id @default(autoincrement())
+  bubble_id                String?   @unique
+  bank                     String?
+  created_by               String?
+  name                     String?
+  created_date             DateTime? @db.Timestamptz(6)
+  modified_date            DateTime? @db.Timestamptz(6)
+  oversea_credit_card      Int?
+  local_credit_card__rate_ Int?
+  synced_at                DateTime? @default(now()) @db.Timestamptz(6)
+  local_credit_card_rate   Decimal?  @db.Decimal
+}
+
+model tnb_bill_database {
+  id             Int       @id @default(autoincrement())
+  bubble_id      String    @unique
+  last_synced_at DateTime? @default(now()) @db.Timestamptz(6)
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime? @default(now()) @db.Timestamptz(6)
+  total_kwh      Int?
+  kwh_with_st    Decimal?  @db.Decimal
+  st_total       Decimal?  @db.Decimal
+  t5_usage       Int?
+  created_date   DateTime? @db.Timestamptz(6)
+  total_bill     Decimal?  @db.Decimal
+  t5_57_1        Int?
+  icpt_surcharge Int?
+  t2_33_4        Decimal?  @db.Decimal
+  t1_21_8        Decimal?  @db.Decimal
+  t4_54_6        Decimal?  @db.Decimal
+  t3_51_6        Decimal?  @db.Decimal
+  t4_usage       Int?
+  kwtbb_1_6      Decimal?  @db.Decimal
+  modified_date  DateTime? @db.Timestamptz(6)
+  t2_usage       Int?
+  created_by     String?
+  t1_usage       Int?
+  kwh_tanpa_st   Decimal?  @db.Decimal
+  t3_usage       Int?
+}
+
+model tnb_tariff_2025 {
+  id                Int       @id @default(autoincrement())
+  bubble_id         String    @unique
+  last_synced_at    DateTime? @default(now()) @db.Timestamptz(6)
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+  created_date      DateTime? @db.Timestamptz(6)
+  usage_kwh         Int?
+  eei               Decimal?  @db.Decimal
+  network           Decimal?  @db.Decimal
+  kwtbb_normal      Int?
+  retail            Int?
+  modified_date     DateTime? @db.Timestamptz(6)
+  usage_normal      Decimal?  @db.Decimal
+  created_by        String?
+  bill_total_normal Decimal?  @db.Decimal
+  capacity          Decimal?  @db.Decimal
+  sst_normal        Int?
+}
+
+model user {
+  id                    Int                   @id @default(autoincrement())
+  bubble_id             String                @unique
+  last_synced_at        DateTime?             @default(now()) @db.Timestamptz(6)
+  created_at            DateTime?             @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?             @default(now()) @db.Timestamptz(6)
+  check_in_report_today String?
+  dealership            String?
+  created_date          DateTime?             @db.Timestamptz(6)
+  linked_agent_profile  String?
+  authentication        String?
+  access_level          String[]
+  user_signed_up        Boolean?
+  profile_picture       String?
+  modified_date         DateTime?             @db.Timestamptz(6)
+  agent_code            String?
+  email                 String?
+  creation_date         String?
+  slug                  String?
+  null                  String?
+  unique_id             String?
+  chat_tag_assignment   chat_tag_assignment[]
+}
+
+model voice_over_configs {
+  lang           String    @db.VarChar(10)
+  script_text    String?   @default("")
+  audio_filename String?
+  last_generated DateTime? @db.Timestamptz(6)
+  type           String    @default("briefing") @db.VarChar(50)
+
+  @@id([type, lang])
+}
+
+model voucher {
+  id                         Int       @id @default(autoincrement())
+  bubble_id                  String    @unique
+  last_synced_at             DateTime? @default(now()) @db.Timestamptz(6)
+  created_at                 DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                 DateTime? @default(now()) @db.Timestamptz(6)
+  modified_date              DateTime? @db.Timestamptz(6)
+  title                      String?
+  created_by                 String?
+  voucher_type               String?
+  invoice_description        String?
+  active                     Boolean?
+  auto_cancel_voucher        String[]
+  discount_amount            Decimal?  @db.Decimal
+  voucher_code               String?
+  created_date               DateTime? @db.Timestamptz(6)
+  terms_conditions           String?
+  voucher_availability       Int?
+  deductable_from_commission Int?
+  discount_percent           Int?
+  delete                     Boolean?
+  available_until            String?
+  public                     Boolean?
+}
+
+model webhooks {
+  id          Int       @id @default(autoincrement())
+  event_type  String    @db.VarChar(100)
+  email_id    String?   @db.VarChar(255)
+  payload     Json
+  received_at DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([email_id], map: "idx_webhooks_email_id")
+  @@index([event_type], map: "idx_webhooks_event_type")
+}
+
+enum tagcategory {
+  APP
+  FUNCTION
+  DEPARTMENT
+}
+
 enum ApprovalStatus {
   pending
   approved
