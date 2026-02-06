@@ -4,6 +4,10 @@ import jwt from "jsonwebtoken";
 const AUTH_URL = "https://auth.atap.solar";
 
 function getReturnTo(request: NextRequest) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (baseUrl && baseUrl.startsWith("http")) {
+    return encodeURIComponent(baseUrl + request.nextUrl.pathname + request.nextUrl.search);
+  }
   return encodeURIComponent(request.nextUrl.href);
 }
 
